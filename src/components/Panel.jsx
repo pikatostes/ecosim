@@ -1,16 +1,18 @@
 import { TIERS } from '../constants/tiers.js';
 import { BDEF, CATEGORIES } from '../constants/buildings.js';
 import { UPGRADES } from '../constants/upgrades.js';
+import { ACHIEVEMENTS } from '../constants/achievements.js';
 import { S } from '../styles/theme.js';
 
 export function Panel({
   panel, setPanel, delMode, setDelMode, tool, setTool,
-  unlocked, inv, upgrades, buyUpgrade, availableBuildings
+  unlocked, inv, upgrades, buyUpgrade, availableBuildings,
+  achievements
 }) {
   return (
     <div style={S.left}>
       <div style={S.tabs}>
-        {[["build", "🔧"], ["tech", "🔬"], ["info", "📊"]].map(([id, ic]) => (
+          {[["build", "🔧"], ["tech", "🔬"], ["info", "📊"], ["achieve", "🏆"]].map(([id, ic]) => (
           <button key={id} onClick={() => setPanel(id)}
             style={{ ...S.tab, ...(panel === id ? S.tabOn : {}) }}>
             {ic}
@@ -178,6 +180,37 @@ export function Panel({
               <span style={{ fontSize: 9, color: c, fontWeight: 700 }}>{v}</span>
             </div>
           ))}
+        </div>
+      )}
+
+      {panel === "achieve" && (
+        <div style={S.pBody}>
+          <div style={S.catLabel}>LOGROS {Object.keys(achievements).length}/{ACHIEVEMENTS.length}</div>
+          {ACHIEVEMENTS.map(a => {
+            const done = !!achievements[a.id];
+            return (
+              <div key={a.id} style={{
+                display: "flex", gap: 8, alignItems: "center",
+                padding: "6px 4px", marginBottom: 3,
+                borderLeft: `2px solid ${done ? "#10b981" : "#0d1a25"}`,
+                opacity: done ? 1 : .4,
+                borderRadius: "0 4px 4px 0",
+              }}>
+                <span style={{ fontSize: 14, filter: done ? "none" : "grayscale(1)" }}>{a.icon}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    fontSize: 9, fontWeight: 700,
+                    color: done ? "#10b981" : "#4b5563",
+                  }}>
+                    {a.name} {done && "✓"}
+                  </div>
+                  <div style={{ fontSize: 7, color: "#374151", lineHeight: 1.3, marginTop: 1 }}>
+                    {a.desc}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

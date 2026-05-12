@@ -106,6 +106,19 @@ export function simulate({ grid, tick, upgrades, unlockedTiers }) {
         }
         c.item = null;
       }
+      if (upgrades["auto_clean"] && def.cat === "waste_handler") {
+        const dirs = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+        for (const [dx, dy] of dirs) {
+          const nx = x + dx, ny = y + dy;
+          if (nx < 0 || nx >= GW || ny < 0 || ny >= GH) continue;
+          const adj = g[ny][nx];
+          if (adj?.item?.type?.startsWith("energy_waste_")) {
+            adj.item = null;
+            events.push({ type: "filter", x, y });
+            break;
+          }
+        }
+      }
     }
   }
 

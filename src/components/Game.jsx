@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { TIERS } from '../constants/tiers.js';
 import { BDEF, CATEGORIES } from '../constants/buildings.js';
 import { UPGRADES } from '../constants/upgrades.js';
+import { ACHIEVEMENTS } from '../constants/achievements.js';
 import { GW, GH, CS, BASE_TICK } from '../constants/config.js';
 import { mkGrid, uid } from '../utils/helpers.js';
 import { simulate } from '../utils/simulation.js';
@@ -30,6 +31,8 @@ export function Game() {
   const [events, setEvents] = useState([]);
   const [showModal, setModal] = useState(null);
   const [stats, setStats] = useState({ totalEarned: 0, processed: 0, filtered: 0 });
+  const [achievements, setAchievements] = useState({});
+  const [newAchievement, setNewAchievement] = useState(null);
 
   const gridRef = useRef(grid);
   gridRef.current = grid;
@@ -93,6 +96,32 @@ export function Game() {
     return () => window.removeEventListener("keydown", h);
   }, []);
 
+  useEffect(() => {
+    const buildings = grid.flat().filter(c => c).length;
+    const checkData = {
+      totalEarned: stats.totalEarned,
+      processed: stats.processed,
+      filtered: stats.filtered,
+      buildings,
+      upgradeCount: Object.keys(upgrades).length,
+      allUpgrades: Object.keys(upgrades).length === UPGRADES.length,
+      tierCount: unlocked.length,
+      allTiers: unlocked.length === TIERS.length,
+      contLevel,
+      tick,
+      hasOrganic: unlocked.includes("organic"),
+      hasAutoClean: upgrades["auto_clean"],
+    };
+    ACHIEVEMENTS.forEach(a => {
+      if (achievements[a.id]) return;
+      if (a.check(checkData)) {
+        setAchievements(prev => ({ ...prev, [a.id]: true }));
+        setNewAchievement(a);
+        setTimeout(() => setNewAchievement(prev => prev?.id === a.id ? null : prev), 3000);
+      }
+    });
+  }, [stats, upgrades, unlocked, contLevel, tick, grid, achievements]);
+
   const handleCell = useCallback((x, y) => {
     if (delMode) {
       setGrid(g => { const n = g.map(r => [...r]); n[y][x] = null; return n; });
@@ -134,6 +163,25 @@ export function Game() {
         return t ? <UnlockModal tier={t} onClose={() => setModal(null)} /> : null;
       })()}
       <ContWarning level={contLevel} />
+      {newAchievement && (
+        <div style={{
+          position: "absolute", top: 10, left: "50%", transform: "translateX(-50%)",
+          zIndex: 100, background: "#071a0f", border: "1px solid #10b98155",
+          borderRadius: 10, padding: "10px 22px", display: "flex", gap: 10,
+          alignItems: "center", boxShadow: "0 0 30px #10b98122",
+          animation: "flashUp .5s ease-out",
+          pointerEvents: "none",
+        }}>
+          <span style={{ fontSize: 22 }}>🏆</span>
+          <div>
+            <div style={{ fontSize: 9, color: "#10b981", letterSpacing: 2 }}>LOGRO DESBLOQUEADO</div>
+            <div style={{ fontSize: 13, color: "#d1d5db", fontWeight: 700 }}>
+              {newAchievement.icon} {newAchievement.name}
+            </div>
+            <div style={{ fontSize: 9, color: "#4b5563" }}>{newAchievement.desc}</div>
+          </div>
+        </div>
+      )}
 
       <div style={S.topBar}>
         <span style={S.topLogo}>♻ ECOSIM</span>
@@ -165,6 +213,7 @@ export function Game() {
           unlocked={unlocked} inv={{ ...inv, ...stats, contLevel, contColor, tick, buildings: grid.flat().filter(c => c).length, items: grid.flat().filter(c => c?.item).length }}
           upgrades={upgrades} buyUpgrade={buyUpgrade}
           availableBuildings={availableBuildings}
+          achievements={achievements}
         />
 
         <div style={S.gridArea} onMouseLeave={() => setHovered(null)}>
