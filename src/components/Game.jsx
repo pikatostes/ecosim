@@ -3,6 +3,7 @@ import { TIERS } from '../constants/tiers.js';
 import { BDEF, CATEGORIES } from '../constants/buildings.js';
 import { UPGRADES } from '../constants/upgrades.js';
 import { ACHIEVEMENTS } from '../constants/achievements.js';
+import { questions } from '../constants/questions.js';
 import { GW, GH, CS, BASE_TICK } from '../constants/config.js';
 import { mkGrid, uid } from '../utils/helpers.js';
 import { simulate } from '../utils/simulation.js';
@@ -10,6 +11,7 @@ import { S } from '../styles/theme.js';
 import { Cell } from './Cell.jsx';
 import { UnlockModal } from './UnlockModal.jsx';
 import { ContWarning } from './ContWarning.jsx';
+import { QuizModal } from './QuizModal.jsx';
 import { Chip } from './Chip.jsx';
 import { CB } from './CB.jsx';
 import { Panel } from "./Panel.jsx";
@@ -33,8 +35,11 @@ export function Game() {
   const [stats, setStats] = useState({ totalEarned: 0, processed: 0, filtered: 0 });
   const [achievements, setAchievements] = useState({});
   const [newAchievement, setNewAchievement] = useState(null);
+  const [quizQ, setQuizQ] = useState(null);
 
   const gridRef = useRef(grid);
+  const quizTimerRef = useRef(null);
+  const usedRef = useRef([]);
   gridRef.current = grid;
 
   useEffect(() => {
@@ -122,6 +127,43 @@ export function Game() {
     });
   }, [stats, upgrades, unlocked, contLevel, tick, grid, achievements]);
 
+  const scheduleQuiz = useCallback(() => {
+    if (quizTimerRef.current) clearTimeout(quizTimerRef.current);
+    quizTimerRef.current = setTimeout(() => {
+      const available = questions.filter((_, i) => !usedRef.current.includes(i));
+      let q;
+      if (available.length === 0) {
+        usedRef.current = [];
+        q = questions[Math.floor(Math.random() * questions.length)];
+      } else {
+        q = available[Math.floor(Math.random() * available.length)];
+      }
+      usedRef.current = [...usedRef.current, questions.indexOf(q)];
+      setQuizQ(q);
+      setPaused(true);
+    }, 600000);
+  }, []);
+
+  useEffect(() => {
+    if (screen === "game") scheduleQuiz();
+    return () => { if (quizTimerRef.current) clearTimeout(quizTimerRef.current); };
+  }, [screen, scheduleQuiz]);
+
+  const handleQuizAnswer = useCallback((selectedIndex) => {
+    const q = quizQ;
+    if (!q) return;
+    if (selectedIndex === q.correct) {
+      setInv(i => ({ ...i, money: (i.money ?? 0) + 300 }));
+      setCont(c => Math.max(0, Math.round(c - 10)));
+    } else {
+      setInv(i => ({ ...i, money: Math.max(0, (i.money ?? 0) - 150) }));
+      setCont(c => Math.min(100, c + 15));
+    }
+    setQuizQ(null);
+    setPaused(false);
+    scheduleQuiz();
+  }, [quizQ, scheduleQuiz]);
+
   const handleCell = useCallback((x, y) => {
     if (delMode) {
       setGrid(g => { const n = g.map(r => [...r]); n[y][x] = null; return n; });
@@ -183,6 +225,8 @@ export function Game() {
         </div>
       )}
 
+      {quizQ && <QuizModal question={quizQ} onAnswer={handleQuizAnswer} />}
+
       <div style={S.topBar}>
         <span style={S.topLogo}>♻ ECOSIM</span>
         <div style={S.topRes}>
@@ -223,7 +267,7 @@ export function Game() {
             zIndex: 10, transition: "background 1s",
           }} />
 
-          {paused && (
+          {paused && !quizQ && (
             <div style={{
               position: "absolute", inset: 0, zIndex: 20, background: "#00000088",
               display: "flex", alignItems: "center", justifyContent: "center",

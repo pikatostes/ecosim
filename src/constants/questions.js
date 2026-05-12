@@ -1,0 +1,17 @@
+export const questions = [
+  { q: "¿Cuántos años tarda una botella de plástico en degradarse?", options: ["50 años", "150 años", "450 años", "1.000 años"], correct: 2 },
+  { q: "¿Qué material se puede reciclar infinitamente sin perder calidad?", options: ["Plástico", "Vidrio", "Papel", "Cartón"], correct: 1 },
+  { q: "¿Cuál es el primer paso del proceso de reciclaje?", options: ["Lavar", "Triturar", "Separar", "Fundir"], correct: 2 },
+  { q: "¿Qué significan las 3R?", options: ["Recoger, Reducir, Reusar", "Reducir, Reutilizar, Reciclar", "Reciclar, Rehacer, Reparar", "Reducir, Recoger, Reciclar"], correct: 1 },
+  { q: "¿De qué color es el contenedor de vidrio?", options: ["Amarillo", "Azul", "Verde", "Marrón"], correct: 2 },
+  { q: "¿De qué color es el contenedor de plástico y envases?", options: ["Amarillo", "Azul", "Verde", "Marrón"], correct: 0 },
+  { q: "¿De qué color es el contenedor de papel y cartón?", options: ["Amarillo", "Azul", "Verde", "Marrón"], correct: 1 },
+  { q: "¿De qué color es el contenedor de residuos orgánicos?", options: ["Amarillo", "Azul", "Verde", "Marrón"], correct: 3 },
+  { q: "¿Cuál de estos materiales NO es biodegradable?", options: ["Cáscara de plátano", "Papel", "Plástico", "Madera"], correct: 2 },
+  { q: "¿Aproximadamente qué porcentaje de residuos domésticos se podría reciclar?", options: ["20%", "40%", "80%", "95%"], correct: 2 },
+  { q: "¿Qué es el compostaje?", options: ["Quemar residuos para obtener energía", "Transformar residuos orgánicos en abono", "Triturar vidrio para reutilizarlo", "Separar plásticos por tipo"], correct: 1 },
+  { q: "¿Cuál es el material más reciclado del mundo?", options: ["Plástico", "Papel", "Vidrio", "Acero"], correct: 3 },
+  { q: "¿Cuántas veces se puede reciclar el papel aproximadamente?", options: ["1-2 veces", "5-7 veces", "15-20 veces", "Infinitas veces"], correct: 1 },
+  { q: "¿Qué tipo de residuo es el aceite de cocina usado?", options: ["Orgánico", "Reciclable", "Peligroso", "Inerte"], correct: 2 },
+  { q: "¿Qué producto se obtiene del reciclaje de plástico PET?", options: ["Bolsas de basura", "Nuevas botellas y textiles", "Combustible", "Abono orgánico"], correct: 1 },
+];
